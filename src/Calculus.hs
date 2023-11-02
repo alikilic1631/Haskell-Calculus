@@ -56,16 +56,25 @@ eval (Log x)   list = log (eval x list)
 Pretty prints an expression to a more human-readable form.
 -}
 showExpr :: Expr -> String
-showExpr = undefined
+showExpr (Val a)   = show a
+showExpr (Id a)    = a
+showExpr (Add a b) = "(" ++ showExpr a ++ "+" ++ showExpr b ++ ")"
+showExpr (Div a b) = "(" ++ showExpr a ++ "/" ++ showExpr b ++ ")"
+showExpr (Mul a b) = "(" ++ showExpr a ++ "*" ++ showExpr b ++ ")"
+showExpr (Neg a)   = "-(" ++ showExpr a ++ ")"
+showExpr (Sin a)   = "sin(" ++ showExpr a ++ ")"
+showExpr (Cos a)   = "cos(" ++ showExpr a ++ ")"
+showExpr (Log a)   = "log(" ++ showExpr a ++ ")"
+
 
 {-|
 Symbolically differentiates a term with respect to a given identifier.
 -}
 diff :: Expr -> String -> Expr
-diff (Val a) _      = Val 0.0
+diff (Val a) _   = Val 0.0
 diff (Id a) x
-  | a == x    = Val 1.0
-  | otherwise = Val 0.0
+  | a == x       = Val 1.0
+  | otherwise    = Val 0.0
 
 diff (Neg a) x   = Neg (diff a x)
 
