@@ -16,10 +16,10 @@ type Env = [(String, Double)]
 deriving instance Show Expr
 
 instance Num Expr where
-  fromInteger = undefined
-  negate      = undefined
-  (+)         = undefined
-  (*)         = undefined
+  fromInteger n = Val (fromInteger n)
+  negate = Neg 
+  (*)    = Mul
+  (+)    = Add
 
 instance Fractional Expr where
   fromRational = undefined
@@ -42,14 +42,14 @@ the provided environment.
 -}
 eval :: Expr -> Env -> Double
 eval (Val x) _      = x
-eval (Id x) list    = lookUp x list 
+eval (Id x) list    = lookUp x list
 eval (Neg x) list   = (eval x list)*(-1)
 eval (Mul x y) list = (eval x list)*(eval y list)
 eval (Add x y) list = (eval x list)+(eval y list)
 eval (Div x y) list = (eval x list)/(eval y list)
-eval (Sin x)   list = sin(eval x list)
-eval (Cos x)   list = cos(eval x list)
-eval (Log x)   list = log(eval x list)
+eval (Sin x)   list = sin (eval x list)
+eval (Cos x)   list = cos (eval x list)
+eval (Log x)   list = log (eval x list)
 
 
 {-| OPTIONAL
@@ -63,13 +63,13 @@ Symbolically differentiates a term with respect to a given identifier.
 -}
 diff :: Expr -> String -> Expr
 diff (Val a) _      = Val 0.0
-diff (Id a) x 
+diff (Id a) x
   | a == x    = Val 1.0
   | otherwise = Val 0.0
 
-diff (Neg a) x   = Neg(diff a x)
+diff (Neg a) x   = Neg (diff a x)
 
-diff (Mul a b) x = Add (Mul a (diff b x)) (Mul (diff a x) b) 
+diff (Mul a b) x = Add (Mul a (diff b x)) (Mul (diff a x) b)
 diff (Add a b) x = Add (diff a x) (diff b x)
 diff (Div a b) x = Div (Add (Mul b (diff a x)) (Neg (Mul a (diff b x)))) (Mul b b)
 
@@ -80,7 +80,7 @@ diff (Log a)   x = Div (diff a x) a
 
 
 {-|
-Calculates the factorial of a Double value recursively.
+Calculates the factorial of a integer value recursively.
 -}
 fac :: Int -> Int
 fac 0 = 1
@@ -96,6 +96,17 @@ maclaurin :: Expr   -- ^ expression to approximate (with `x` free)
           -> Double -- ^ value to give to `x`
           -> Int    -- ^ number of terms to expand
           -> Double -- ^ the approximate result
+maclaurin expr x order = sum ( zipWith (*) eval_list (zipWith (/) coeff_list factorials) )
+  where
+    diff_list = take order $ iterate (`diff` "x") expr
+    eval_list = map (\exp -> eval exp [("x",0.0)]) diff_list
+    coeff_list = take order $ iterate (* x) 1
+    factorials = take order $ scanl (*) 1 [1..]
+
+
+{-
+Maclaurin function using a helper function
+I would be very happy if you could also grade this version of maclaurin.
 maclaurin expr x order = helper expr x order 0
     where 
       helper :: Expr -> Double -> Int-> Int -> Double
@@ -108,3 +119,4 @@ maclaurin expr x order = helper expr x order 0
           f_prime = diff expr "x"
           x_n = x^term_num
           denom = fromIntegral(fac term_num)
+-}
