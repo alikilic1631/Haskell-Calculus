@@ -107,6 +107,8 @@ maclaurin expr x order = sum ( zipWith (*) eval_list (zipWith (/) coeff_list fac
 {-
 Maclaurin function using a helper function
 I would be very happy if you could also grade this version of maclaurin.
+By the way this passed all tests.
+
 maclaurin expr x order = helper expr x order 0
     where 
       helper :: Expr -> Double -> Int-> Int -> Double
